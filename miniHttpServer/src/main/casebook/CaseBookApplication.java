@@ -1,34 +1,36 @@
-package main.javache;
+package main.casebook;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Set;
 
-import main.database.User;
-import main.database.UserRepository;
+import main.javache.WebConstants;
+import main.javache.api.RequestHandler;
 import main.javache.http.HttpRequestImpl;
 import main.javache.http.HttpResponseImpl;
 import main.javache.http.HttpSession;
-import main.javache.http.HttpSessionImpl;
 import main.javache.http.HttpSessionStorage;
+import main.javache.http.HttpSessionStorageImpl;
 import main.javache.http.HttpStatus;
 
-public class RequestHandler {
-	private UserRepository repository;
+public class CaseBookApplication implements RequestHandler{
 
 	private HttpRequestImpl request;
 
 	private HttpResponseImpl response;
 
 	private HttpSessionStorage sessionStorage;
+	
+	private boolean intercepted;
 
-	public RequestHandler(HttpSessionStorage sessionStorage, UserRepository reository) {
-		this.repository = reository;
+	public CaseBookApplication(HttpSessionStorage sessionStorage) {
+		this.intercepted = false;
 		this.sessionStorage = sessionStorage;
 	}
 
+	@Override
 	public byte[] handleRequest(String requestContent) {
 		this.request = new HttpRequestImpl(requestContent);
 		this.response = new HttpResponseImpl();
@@ -40,6 +42,8 @@ public class RequestHandler {
 			result = this.processPostRequest();
 		}
 		this.sessionStorage.refreshSession();
+		
+		this.intercepted = true;
 
 		return result;
 
@@ -81,32 +85,32 @@ public class RequestHandler {
 	private byte[] processPostRequest() {
 		// REGISTER
 		if (this.request.getRequestUrl().equals("/register")) {
-			String password = this.request.getBodyParameters().get("password");
-			String confirmPass = this.request.getBodyParameters().get("confirmPassword");
-			String username = this.request.getBodyParameters().get("username");
-			if (!password.equals(confirmPass)) {
-				return this.redirect("passwords not equals".getBytes(), "/register");
-			}
-			if (repository.existsByUsername(username)) {
-				return this.redirect("user with username eists".getBytes(), "/register");
-			}
-			User user = new User();
-			user.setUsername(username);
-			user.setPassword(password);
-			repository.save(user);
+//			String password = this.request.getBodyParameters().get("password");
+//			String confirmPass = this.request.getBodyParameters().get("confirmPassword");
+//			String username = this.request.getBodyParameters().get("username");
+//			if (!password.equals(confirmPass)) {
+//				return this.redirect("passwords not equals".getBytes(), "/register");
+//			}
+//			if (repository.existsByUsername(username)) {
+//				return this.redirect("user with username eists".getBytes(), "/register");
+//			}
+//			User user = new User();
+//			user.setUsername(username);
+//			user.setPassword(password);
+//			repository.save(user);
 			return this.redirect("successfully registered user".getBytes(), "/");
 		} else if (this.request.getRequestUrl().equals("/login")) {
-			// LOGIN
-			String password = this.request.getBodyParameters().get("password");
-			String username = this.request.getBodyParameters().get("username");
-			if (repository.existsByUsername(username)
-					&& repository.findOneByUsername(username).getPassword().equals(password)) {
-				HttpSession session = new HttpSessionImpl();
-				session.addAtributes("username", username);
-				this.sessionStorage.addSession(session);
-				this.response.addCookie("Javache", session.getId());
-				return this.redirect("successfully login".getBytes(), "/forbiden");
-			}
+//			// LOGIN
+//			String password = this.request.getBodyParameters().get("password");
+//			String username = this.request.getBodyParameters().get("username");
+//			if (repository.existsByUsername(username)
+//					&& repository.findOneByUsername(username).getPassword().equals(password)) {
+//				HttpSession session = new HttpSessionImpl();
+//				session.addAtributes("username", username);
+//				this.sessionStorage.addSession(session);
+//				this.response.addCookie("Javache", session.getId());
+//				return this.redirect("successfully login".getBytes(), "/forbiden");
+//			}
 			return this.redirect("wrong password or not exists username".getBytes(), "/");
 
 		}
@@ -199,6 +203,11 @@ public class RequestHandler {
 		this.response.addHeader("Location", location);
 		this.response.setContent(content);
 		return this.response.getBytes();
+	}
+
+	@Override
+	public boolean hasIntercepted() {
+		return this.intercepted;
 	}
 
 }

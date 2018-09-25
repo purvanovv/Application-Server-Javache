@@ -7,5 +7,5 @@ public class WebConstants {
 	public static final String PROJECT_DIRECTORY = System.getProperty("user.dir");
 	public static final String HTML_EXTENSION_AND_SEPARATOR = ".html";
 	public static final String ASSETS_FOLDER_PATH = PROJECT_DIRECTORY.concat("\\src\\main\\resources\\assets\\");
-	static final String PAGES_FOLDER_PATH = PROJECT_DIRECTORY.concat("\\src\\main\\resources\\pages\\");
+	public static final String PAGES_FOLDER_PATH = PROJECT_DIRECTORY.concat("\\src\\main\\resources\\pages\\");
 }
